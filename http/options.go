@@ -3,6 +3,7 @@ package http
 import "time"
 
 type options struct {
+	addr    string
 	timeout time.Duration
 }
 
