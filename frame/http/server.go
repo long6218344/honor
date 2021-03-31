@@ -38,12 +38,11 @@ func (srv *Server) Start() error {
 	return nil
 }
 
+// Use use middleware.
 func (srv *Server) Use(middleware ...HandlerFunc) {
 	var ms []gin.HandlerFunc
 	for _, m := range middleware {
-		ms = append(ms, func(ctx *gin.Context) {
-			m(&Context{ctx})
-		})
+		ms = append(ms, func(ctx *gin.Context) { m(&Context{ctx}) })
 	}
 	srv.engine.Use(ms...)
 }
