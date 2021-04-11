@@ -45,7 +45,8 @@ func (group *RouterGroup) handle(httpMethod, relativePath string, handlers Handl
 }
 
 func (group *RouterGroup) Use(middleware ...HandlerFunc) IRoutes {
-	return nil
+	group.Handlers = append(group.Handlers, middleware...)
+	return group.returnObj()
 }
 
 func (group *RouterGroup) Group(relativePath string, handlers ...HandlerFunc) *RouterGroup {

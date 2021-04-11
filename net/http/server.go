@@ -86,16 +86,17 @@ func (engine *Engine) allocateContext() *Context {
 // For example, this is the right place for a logger or error management middleware.
 func (engine *Engine) Use(middleware ...HandlerFunc) IRoutes {
 	engine.RouterGroup.Use(middleware...)
-
+	engine.rebuild404Handlers()
+	engine.rebuild405Handlers()
 	return engine
 }
 
 func (engine *Engine) rebuild404Handlers() {
-
+	engine.allNoRoute = engine.combineHandlers(engine.noRoute)
 }
 
 func (engine *Engine) rebuild405Handlers() {
-
+	engine.allNoMethod = engine.combineHandlers(engine.noMethod)
 }
 
 func (engine *Engine) addRoute(method, path string, handlers HandlersChain) {
