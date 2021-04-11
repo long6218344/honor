@@ -49,7 +49,11 @@ func (group *RouterGroup) Use(middleware ...HandlerFunc) IRoutes {
 }
 
 func (group *RouterGroup) Group(relativePath string, handlers ...HandlerFunc) *RouterGroup {
-	return nil
+	return &RouterGroup{
+		Handlers: group.combineHandlers(handlers),
+		basePath: group.calculateAbsolutePath(relativePath),
+		engine:   group.engine,
+	}
 }
 
 func (group *RouterGroup) Handle(httpMethod string, relativePath string, handlers ...HandlerFunc) IRoutes {
@@ -57,7 +61,7 @@ func (group *RouterGroup) Handle(httpMethod string, relativePath string, handler
 }
 
 func (group *RouterGroup) POST(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	return group.handle(http.MethodPost, relativePath, handlers)
 }
 
 func (group *RouterGroup) GET(relativePath string, handlers ...HandlerFunc) IRoutes {

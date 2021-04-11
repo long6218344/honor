@@ -1,11 +1,14 @@
 package http
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestInsertChild(t *testing.T) {
 	node := &node{}
-	path := "/user/:name/*addr"
-	fullPath := "/user/:name/*addr"
+	path := "/us/:city/*addr"
+	fullPath := "/us/:city/*addr"
 
 	handlersChain := []HandlerFunc{
 		func(ctx *Context) {
@@ -20,4 +23,10 @@ func TestInsertChild(t *testing.T) {
 	// path: /*addr wildcard: *addr i: 1 valid: true
 
 	node.insertChild(path, fullPath, handlersChain)
+
+	fmt.Printf("%+v\n", node)
+	fmt.Printf("%+v\n", node.children[0])
+	fmt.Printf("%+v\n", node.children[0].children[0])
+	fmt.Printf("%+v\n", node.children[0].children[0].children[0])
+	fmt.Printf("%+v\n", node.children[0].children[0].children[0].children[0])
 }

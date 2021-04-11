@@ -1,6 +1,11 @@
 package http
 
-import "net/http"
+import (
+	"bufio"
+	"io"
+	"net"
+	"net/http"
+)
 
 const (
 	noWritten     = -1
@@ -36,8 +41,56 @@ type responseWriter struct {
 	status int
 }
 
+func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if w.size > 0 {
+		w.size = 0
+	}
+	return w.ResponseWriter.(http.Hijacker).Hijack()
+}
+
+func (w *responseWriter) Flush() {
+	panic("implement me")
+}
+
+func (w *responseWriter) CloseNotify() <-chan bool {
+	panic("implement me")
+}
+
 func (w *responseWriter) reset(writer http.ResponseWriter) {
 	w.ResponseWriter = writer
 	w.size = noWritten
 	w.status = defaultStatus
+}
+
+func (w *responseWriter) Status() int {
+	return w.status
+}
+
+func (w *responseWriter) Size() int {
+	return w.size
+}
+
+func (w *responseWriter) Written() bool {
+	return w.size != noWritten
+}
+
+func (w *responseWriter) WriteHeaderNow() {
+	if !w.Written() {
+		w.size = 0
+		w.ResponseWriter.WriteHeader(w.status)
+	}
+}
+
+func (w *responseWriter) WriteString(s string) (n int, err error) {
+	w.WriteHeaderNow()
+	n, err = io.WriteString(w.ResponseWriter, s)
+	w.size += n
+	return
+}
+
+func (w *responseWriter) Pusher() (pusher http.Pusher) {
+	if pusher, ok := w.ResponseWriter.(http.Pusher); ok {
+		return pusher
+	}
+	return nil
 }

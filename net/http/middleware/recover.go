@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	http2 "github.com/zhoushuguang/honor/frame/http"
+	"github.com/zhoushuguang/honor/net/http"
 )
 
-func Recover() http2.HandlerFunc {
-	return func(ctx *http2.Context) {
+func Recover() http.HandlerFunc {
+	return func(ctx *http.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 

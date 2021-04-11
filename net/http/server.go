@@ -32,6 +32,24 @@ type RoutesInfo []RouteInfo
 type Engine struct {
 	RouterGroup
 
+	// if enabled, the url.RawPath will be used to find parameters.
+	UseRawPath bool
+
+	// If true, the path value will be unescaped.
+	UnescapePathValues bool
+
+	// If enabled, the router checks if another method is allowd for the
+	// current route, if the current request can not be routed.
+	// If this is the case, the request is answered with 'Method Not Allowed'
+	// and HTTP status code 405.
+	// If no other Method is allowed, the request is delegated to the NotFound
+	// handler.
+	HandleMethodNotAllowed bool
+
+	// Value of `maxMemory` param that is given to http.Request't ParseMultipartForm
+	// method call.
+	MaxMultipartMemory int64
+
 	allNoRoute  HandlersChain
 	allNoMethod HandlersChain
 	noRoute     HandlersChain
@@ -114,6 +132,11 @@ func (engine *Engine) handleHTTPRequest(c *Context) {
 	rPath := c.Request.URL.Path
 	unescape := false
 
+	if engine.UseRawPath && len(c.Request.URL.RawPath) > 0 {
+		rPath = c.Request.URL.RawPath
+		unescape = engine.UnescapePathValues
+	}
+
 	// Find root of the tree for the given HTTP method
 	t := engine.trees
 	for i, tl := 0, len(t); i < tl; i++ {
@@ -123,5 +146,33 @@ func (engine *Engine) handleHTTPRequest(c *Context) {
 		root := t[i].root
 		// Find route in tree
 		value := root.getValue(rPath, c.params, unescape)
+		if value.params != nil {
+			c.Params = *value.params
+		}
+		if value.handlers != nil {
+			c.handlers = value.handlers
+			c.fullPath = value.fullPath
+			c.Next()
+			c.writermem.WriteHeaderNow()
+			return
+		}
+		if httpMethod != "CONNECT" && rPath != "/" {
+
+		}
+		break
 	}
+
+	if engine.HandleMethodNotAllowed {
+
+	}
+}
+
+// Run attaches the router to a http.Server and starts listening and serving HTTP requests.
+func (engine *Engine) Run(addrs ...string) (err error) {
+	defer func() {}()
+
+	addr := resolveAddress(addrs)
+	srv := http.Server{Addr: addr, Handler: engine}
+	err = srv.ListenAndServe()
+	return
 }
