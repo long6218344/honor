@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+
+	"github.com/zhoushuguang/honor/net/http/binding"
 )
 
 const abortIndex int8 = math.MaxInt8 / 2
@@ -127,4 +129,83 @@ func (c *Context) initFormCache() {
 		}
 		c.formCache = req.PostForm
 	}
+}
+
+func (c *Context) AbortWithError(code int, err error) *Error {
+	c.AbortWithStatus(code)
+	return c.Error(err)
+}
+
+func (c *Context) AbortWithStatus(code int) {
+	c.Status(code)
+	c.Writer.WriteHeaderNow()
+	c.Abort()
+}
+
+// Abort prevents pending handlers from being called. Note that this will not stop the current handler.
+// Let's say you have an authorization middleare that validates that the current request is authorized.
+// If the authorization fails (ex: the password does not match), call Abort to ensure the remaing handlers
+// for this request are not called.
+func (c *Context) Abort() {
+	c.index = abortIndex
+}
+
+// Bind checks the Content-Type to select a binding engine automatically,
+// Depending the "Content-Type" header different bindings are used:
+//		"application/json" --> JSON binding
+//		"application/xml"  --> XML binding
+// otherwise --> returns an error.
+// It parses the request's body as JSON if Content-Type == "application/json" using JSON or XML as a JSON input.
+// It decodes the json payload into the struct specified as a pointer.
+// It writes a 400 error and sets Content-Type header "text/plain" in the response if input is not valid.
+func (c *Context) Bind(obj interface{}) error {
+	b := binding.Default(c.Request.Method, c.ContentType())
+	return c.MustBindWith(obj, b)
+}
+
+// MustBindWith binds the passed struct pointer using the specified binding engine.
+// It will abort the request with HTTP 400 if any error occurs.
+func (c *Context) MustBindWith(obj interface{}, b binding.Binding) error {
+	if err := c.ShouldBindWith(obj, b); err != nil {
+		_ = c.AbortWithError(http.StatusBadRequest, err).SetType(ErrorTypeBind)
+		return err
+	}
+	return nil
+}
+
+func (c *Context) ShouldBindWith(obj interface{}, b binding.Binding) error {
+	return b.Bind(c.Request, obj)
+}
+
+func (c *Context) ContentType() string {
+	return filterFlags(c.requestHeader("Content-Type"))
+}
+func (c *Context) requestHeader(key string) string {
+	return c.Request.Header.Get(key)
+}
+
+// Status sets the HTTP response code.
+func (c *Context) Status(code int) {
+	c.Writer.WriteHeader(code)
+}
+
+// Error attaches an error to the current context. The error is pushed to a list of errors.
+// It's a good idea to call Error for each error that occurred during the resolution of a request.
+// A middleare can be used to collect all the errors and push them to a database together,
+// print a log, or append it in the HTTP response.
+// Error will panice if err is nil.
+func (c *Context) Error(err error) *Error {
+	if err == nil {
+		panic("err is nil")
+	}
+
+	parsedError, ok := err.(*Error)
+	if !ok {
+		parsedError = &Error{
+			Err:  err,
+			Type: ErrorTypePrivate,
+		}
+	}
+	c.Errors = append(c.Errors, parsedError)
+	return parsedError
 }
