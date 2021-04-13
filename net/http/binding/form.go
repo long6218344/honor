@@ -32,7 +32,7 @@ func (formPostBinding) Name() string {
 }
 
 func (formPostBinding) Bind(req *http.Request, obj interface{}) error {
-
+	return nil
 }
 
 func (formMultipartBinding) Name() string {
