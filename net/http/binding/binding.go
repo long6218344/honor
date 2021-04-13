@@ -28,20 +28,24 @@ type StructValidator interface {
 var Validator StructValidator = &defaultValidator{}
 
 var (
-	JOSN = jsonBinding{}
-	Form = formBinding{}
+	JOSN          = jsonBinding{}
+	Form          = formBinding{}
+	FormPost      = formPostBinding{}
+	FormMultipart = formMultipartBinding{}
 )
 
 // Default returns the appropriate Binding instance based on the HTTP method
 // and the content type.
 func Default(method, contentType string) Binding {
-	if method == http.MethodGet {
+	if method == http.MethodGet { // url params
 		return Form
 	}
 
 	switch contentType {
-	case MIMEJSON:
+	case MIMEJSON: // application/json
 		return JOSN
+	case MIMEMultipartPOSTForm: // multipart/form-data
+		return FormMultipart
 	default:
 		return Form
 	}

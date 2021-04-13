@@ -8,6 +8,9 @@ import (
 	"github.com/zhoushuguang/honor/net/http/internal/json"
 )
 
+var EnableDecoderUseNumber = false
+var EnableDecoderDisallowUnknowFields = false
+
 type jsonBinding struct{}
 
 func (jsonBinding) Name() string {
@@ -23,8 +26,14 @@ func (jsonBinding) Bind(req *http.Request, obj interface{}) error {
 
 func decodeJSON(r io.Reader, obj interface{}) error {
 	decoder := json.NewDecoder(r)
-
+	if EnableDecoderUseNumber {
+		decoder.UseNumber()
+	}
+	if EnableDecoderDisallowUnknowFields {
+		decoder.DisallowUnknownFields()
+	}
 	if err := decoder.Decode(obj); err != nil {
 		return err
 	}
+	return validate(obj)
 }

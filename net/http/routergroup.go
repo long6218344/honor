@@ -28,6 +28,8 @@ type IRoutes interface {
 	StaticFS(string, http.FileSystem) IRoutes
 }
 
+// RouterGroup is used internally to configure router. a RouterGroup is associated with
+// a prefix and an array of handlers (middleware).
 type RouterGroup struct {
 	Handlers HandlersChain
 	basePath string
@@ -70,27 +72,38 @@ func (group *RouterGroup) GET(relativePath string, handlers ...HandlerFunc) IRou
 }
 
 func (group *RouterGroup) DELETE(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	return group.handle(http.MethodDelete, relativePath, handlers)
 }
 
 func (group *RouterGroup) PATCH(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	return group.handle(http.MethodPatch, relativePath, handlers)
 }
 
 func (group *RouterGroup) PUT(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	return group.handle(http.MethodPut, relativePath, handlers)
 }
 
 func (group *RouterGroup) OPTIONS(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	return group.handle(http.MethodOptions, relativePath, handlers)
 }
 
 func (group *RouterGroup) HEAD(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	return group.handle(http.MethodHead, relativePath, handlers)
 }
 
+// Any registers a route that matches all the HTTP methods.
+// GET, POST, PUT, PATCH, HEAD, OPTIONS, DELETE, CONNECT, TRACE.
 func (group *RouterGroup) Any(relativePath string, handlers ...HandlerFunc) IRoutes {
-	return nil
+	group.handle(http.MethodGet, relativePath, handlers)
+	group.handle(http.MethodPost, relativePath, handlers)
+	group.handle(http.MethodPut, relativePath, handlers)
+	group.handle(http.MethodPatch, relativePath, handlers)
+	group.handle(http.MethodHead, relativePath, handlers)
+	group.handle(http.MethodOptions, relativePath, handlers)
+	group.handle(http.MethodDelete, relativePath, handlers)
+	group.handle(http.MethodConnect, relativePath, handlers)
+	group.handle(http.MethodTrace, relativePath, handlers)
+	return group.returnObj()
 }
 
 func (group *RouterGroup) StaticFile(relativePath, filePath string) IRoutes {
