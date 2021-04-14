@@ -5,4 +5,8 @@
 
 ## Installation
 
+```
+go get -u github.com/zhoushuguang/honor
+```
+
 ## Quick start
