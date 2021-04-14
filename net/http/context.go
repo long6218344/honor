@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"math"
 	"net/http"
 	"net/url"
@@ -39,6 +40,8 @@ type Context struct {
 
 	queryCache url.Values
 	formCache  url.Values
+
+	ctx context.Context
 }
 
 func (c *Context) reset() {
