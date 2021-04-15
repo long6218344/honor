@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/zhoushuguang/honor/examples/rpc/basic/pb"
 	"github.com/zhoushuguang/honor/net/rpc"
@@ -18,11 +19,15 @@ type honor struct {
 }
 
 func (h *honor) GetHonor(ctx context.Context, req *pb.GetHonorRequest) (*pb.GetHonorReply, error) {
+	time.Sleep(time.Second * 30)
 	return &pb.GetHonorReply{Title: h.Title}, nil
 }
 
 func main() {
-	server := rpc.New()
+	server := rpc.New(rpc.WithUnaryInterceptor(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		fmt.Println("aaaaaaaa")
+		return handler(ctx, req)
+	}), rpc.WithTimeout(time.Second))
 
 	server.Use(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		fmt.Println("interceptor 1 ...")

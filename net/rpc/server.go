@@ -27,13 +27,12 @@ func New(opt ...Option) *Server {
 	srv := &Server{
 		opts: opts,
 	}
-
-	srv.srv = grpc.NewServer(srv.genOptions()...)
+	srv.srv = grpc.NewServer(srv.serverOptions()...)
 	return srv
 }
 
-// get grpc options by config.
-func (s *Server) genOptions() (opts []grpc.ServerOption) {
+// get grpc server options.
+func (s *Server) serverOptions() (opts []grpc.ServerOption) {
 	param := grpc.KeepaliveParams(keepalive.ServerParameters{
 		Time:              s.opts.time,
 		Timeout:           s.opts.timeout,
@@ -54,18 +53,15 @@ func (s *Server) chainUnaryInterceptors(ctx context.Context, req interface{}, in
 	} else if len(interceptors) == 1 {
 		return interceptors[0](ctx, req, info, handler)
 	}
-	chainedInt := func(ctx context.Context, req interface{}) (resp interface{}, err error) {
-		return interceptors[0](ctx, req, info, getChainUnaryHandler(interceptors, 0, info, handler))
-	}
-	return chainedInt(ctx, req)
+	return interceptors[0](ctx, req, info, getChainUnaryHandler(interceptors, 0, info, handler))
 }
 
-func getChainUnaryHandler(interceptors []grpc.UnaryServerInterceptor, curr int, info *grpc.UnaryServerInfo, finalHandler grpc.UnaryHandler) grpc.UnaryHandler {
-	if curr == len(interceptors)-1 {
+func getChainUnaryHandler(interceptors []grpc.UnaryServerInterceptor, idx int, info *grpc.UnaryServerInfo, finalHandler grpc.UnaryHandler) grpc.UnaryHandler {
+	if len(interceptors)-1 == idx {
 		return finalHandler
 	}
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		return interceptors[curr+1](ctx, req, info, getChainUnaryHandler(interceptors, curr+1, info, finalHandler))
+		return interceptors[idx+1](ctx, req, info, getChainUnaryHandler(interceptors, idx+1, info, finalHandler))
 	}
 }
 

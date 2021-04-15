@@ -1,8 +1,9 @@
 package rpc
 
 import (
-	"google.golang.org/grpc"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 const (
