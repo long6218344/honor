@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"google.golang.org/grpc/reflection"
 	"math"
 	"net"
 	"os"
@@ -93,7 +94,12 @@ func (s *Server) Run(addrs ...string) error {
 	if err != nil {
 		return err
 	}
+	reflection.Register(s.srv)
 	return s.srv.Serve(listen)
+}
+
+func (s *Server) Close() {
+	s.srv.GracefulStop()
 }
 
 func resolveAddress(addr []string) string {
