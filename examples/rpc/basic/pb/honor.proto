@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "github.com/zhoushuguang/honor/examples/rpc/basic/pb";
+
+package pb;
+
+service Honor {
+    rpc GetHonor(GetHonorRequest) returns (GetHonorReply);
+}
+
+message GetHonorRequest {
+    int64 id = 1;
+}
+
+message GetHonorReply {
+    string title = 1;
+}

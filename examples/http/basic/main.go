@@ -9,7 +9,7 @@ import (
 func main() {
 	engine := http.New()
 	engine.GET("/user", func(ctx *http.Context) {
-		ctx.Writer.Write([]byte("hello honor"))
+		_, _ = ctx.Writer.Write([]byte("hello honor"))
 	})
 
 	log.Fatal(engine.Run(":9000"))
