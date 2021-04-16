@@ -52,5 +52,19 @@ func (l *Logger) Warnf(format string, args ...interface{}) {
 }
 
 func (l *Logger) Errorf(format string, args ...interface{}) {
+	l.Logf(ErrorLevel, format, args...)
+}
 
+func (l *Logger) Logf(level Level, format string, args ...interface{}) {
+	if l.IsLevelEnable(level) {
+
+	}
+}
+
+func (l *Logger) IsLevelEnable(level Level) bool {
+	return l.level() >= level
+}
+
+func (l *Logger) level() Level {
+	return Level(atomic.LoadUint32((*uint32)(&l.Level)))
 }
