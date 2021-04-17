@@ -8,8 +8,9 @@ import (
 )
 
 type Logger struct {
-	Output io.Writer
-	Level  Level
+	Output    io.Writer
+	Level     Level
+	Formatter Formatter
 
 	mu sync.Mutex
 }

@@ -2,6 +2,8 @@ package log
 
 import "io"
 
+type Fields map[string]interface{}
+
 var defaultLogger = New()
 
 func SetLevel(level Level) {
