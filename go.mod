@@ -9,4 +9,6 @@ require (
 	google.golang.org/grpc v1.37.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
+	gorm.io/driver/mysql v1.0.5 // indirect
+	gorm.io/gorm v1.21.8 // indirect
 )
