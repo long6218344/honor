@@ -6,12 +6,14 @@ type Fields map[string]interface{}
 
 var defaultLogger = New()
 
+// SetLevel sets the standard logger level.
 func SetLevel(level Level) {
 	defaultLogger.SetLevel(level)
 }
 
+// SetOutput sets the standard logger output.
 func SetOutput(output io.Writer) {
-
+	defaultLogger.SetOutput(output)
 }
 
 func Info(args ...interface{}) {

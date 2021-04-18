@@ -7,14 +7,26 @@ import (
 )
 
 const (
-	FieldKeyMsg   = "msg"
-	FieldKeyLevel = "level"
-	FieldKeyTime  = "time"
+	FieldKeyMsg           = "msg"
+	FieldKeyLevel         = "level"
+	FieldKeyTime          = "time"
+	FieldKeyLogHonorError = "honor_error"
+	FieldKeyFunc          = "func"
+	FieldKeyFile          = "file"
+
+	defaultTimestampFormat = "2006-01-02 15:04:05.000"
 )
 
 type fieldKey string
 
 type FieldMap map[fieldKey]string
+
+func (f FieldMap) resolve(key fieldKey) string {
+	if k, ok := f[key]; ok {
+		return k
+	}
+	return string(key)
+}
 
 type JSONFormatter struct {
 	TimestampFromat  string
@@ -22,6 +34,10 @@ type JSONFormatter struct {
 	// DisableHTMLEscape allows disabling html escaping in output
 	DisableHTMLEscape bool
 	DataKey           string
+
+	// FieldMap allows users to customize the names of keys for default fields.
+	FieldMap FieldMap
+
 	// PrettyPrint will indent all json logs
 	PrettyPrint bool
 }
@@ -41,6 +57,20 @@ func (f *JSONFormatter) Format(entry *Entry) ([]byte, error) {
 		newData[f.DataKey] = data
 		data = newData
 	}
+
+	timestampFormat := f.TimestampFromat
+	if timestampFormat == "" {
+		timestampFormat = defaultTimestampFormat
+	}
+
+	if entry.err != "" {
+		data[f.FieldMap.resolve(FieldKeyLogHonorError)] = entry.err
+	}
+	if !f.DisableTimestamp {
+		data[f.FieldMap.resolve(FieldKeyTime)] = entry.Time.Format(timestampFormat)
+	}
+	data[f.FieldMap.resolve(FieldKeyMsg)] = entry.Message
+	data[f.FieldMap.resolve(FieldKeyLevel)] = entry.Level.String()
 
 	var b *bytes.Buffer
 	if entry.Buffer != nil {
