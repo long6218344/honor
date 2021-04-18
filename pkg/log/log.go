@@ -7,7 +7,7 @@ type Fields map[string]interface{}
 var defaultLogger = New()
 
 func SetLevel(level Level) {
-
+	defaultLogger.SetLevel(level)
 }
 
 func SetOutput(output io.Writer) {
@@ -47,7 +47,6 @@ func Errorf(format string, args ...interface{}) {
 }
 
 func Panicf(format string, args ...interface{}) {
-
 }
 
 func Fatalf(format string, arg ...interface{}) {
